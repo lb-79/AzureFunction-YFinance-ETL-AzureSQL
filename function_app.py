@@ -7,7 +7,7 @@ import yfinance as yf
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 */10 * * * *", arg_name="myTimer", run_on_startup=True,
+@app.timer_trigger(schedule="0 */10 * * * *", arg_name="myTimer", run_on_startup=False,
               use_monitor=False)
 def timer_trigger_etl(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function started.')
@@ -25,8 +25,8 @@ def timer_trigger_etl(myTimer: func.TimerRequest) -> None:
     # Gruppo 2 - Valute
     fx_tickers = ["EURUSD=X", "USDCHF=X", "EURCHF=X"]  # yfinance usa il suffisso =X per valute
 
-    fetch_and_store(connection_string,equity_tickers, 'EquityData',start_date,end_date)
-    fetch_and_store(connection_string,fx_tickers, 'FxData',start_date,end_date)
+    fetch_and_store(connection_string,equity_tickers, 'staging.EquityData',start_date,end_date)
+    fetch_and_store(connection_string,fx_tickers, 'staging.FxData',start_date,end_date)
 
 
 #funzione di scrittura su database
@@ -45,7 +45,7 @@ def fetch_and_store(connection_string, tickers, table_name,start_date,end_date):
                     for idx, row in data.iterrows():
                         cursor.execute(f"""
                             INSERT INTO {table_name} 
-                            (Ticker, Date, Open, High, Low, Close, Volume)
+                            ([Ticker], [Date], [Open], [High], [Low], [Close], [Volume])
                             VALUES (?, ?, ?, ?, ?, ?, ?)
                         """, ticker, idx.date(), row['Open'], row['High'], row['Low'], row['Close'], row.get('Volume', 0))
 
