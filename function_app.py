@@ -27,7 +27,7 @@ def timer_trigger_etl(myTimer: func.TimerRequest) -> None:
 
     fetch_and_store(connection_string,equity_tickers, 'staging.EquityData',start_date,end_date)
     fetch_and_store(connection_string,fx_tickers, 'staging.FxData',start_date,end_date)
-
+    computeKPI(connection_string)
 
 #funzione di scrittura su database
 def fetch_and_store(connection_string, tickers, table_name,start_date,end_date):
@@ -51,4 +51,17 @@ def fetch_and_store(connection_string, tickers, table_name,start_date,end_date):
 
     except Exception as e:
         logging.error(f"Error while inserting Data: {e}")
+
+#funzione di scrittura su database
+def computeKPI(connection_string):
+    conn = pyodbc.connect(connection_string)
+    cursor = conn.cursor()
+
+    try:
+        with pyodbc.connect(connection_string) as conn:
+            with conn.cursor() as cursor:
+                        cursor.execute(f""" EXEC etl.exec etl.usp_main;""")
+
+    except Exception as e:
+        logging.error(f"Error computing KPI: {e}")
 
