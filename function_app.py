@@ -52,7 +52,7 @@ def fetch_and_store(connection_string, tickers, table_name,start_date,end_date):
     except Exception as e:
         logging.error(f"Error while inserting Data: {e}")
 
-#funzione di scrittura su database
+#Chiamata stored procedure per calcolo KPI
 def computeKPI(connection_string):
     conn = pyodbc.connect(connection_string)
     cursor = conn.cursor()
@@ -60,7 +60,7 @@ def computeKPI(connection_string):
     try:
         with pyodbc.connect(connection_string) as conn:
             with conn.cursor() as cursor:
-                        cursor.execute(f""" EXEC etl.exec etl.usp_main;""")
+                        cursor.execute("EXEC etl.usp_main;")
 
     except Exception as e:
         logging.error(f"Error computing KPI: {e}")
