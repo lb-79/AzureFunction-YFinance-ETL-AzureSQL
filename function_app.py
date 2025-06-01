@@ -7,7 +7,8 @@ import yfinance as yf
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 */10 * * * *", arg_name="myTimer", run_on_startup=False,
+# orario di chiusura del NYSE
+@app.timer_trigger(schedule="0 0 2 * * *", arg_name="myTimer", run_on_startup=False,
               use_monitor=False)
 def timer_trigger_etl(myTimer: func.TimerRequest) -> None:
     logging.info('Python timer trigger function started.')
