@@ -8,6 +8,8 @@ import yfinance as yf
 app = func.FunctionApp()
 
 # orario di chiusura del NYSE
+# Test every 10 minutes --> "0 */10 * * * *"
+# Normal Schedule       --> "0 0 2 * * *"
 @app.timer_trigger(schedule="0 0 2 * * *", arg_name="myTimer", run_on_startup=False,
               use_monitor=False)
 def timer_trigger_etl(myTimer: func.TimerRequest) -> None:
@@ -26,8 +28,11 @@ def timer_trigger_etl(myTimer: func.TimerRequest) -> None:
     # Gruppo 2 - Valute
     fx_tickers = ["EURUSD=X", "USDCHF=X", "EURCHF=X"]  # yfinance usa il suffisso =X per valute
 
+    logging.info("Starting equity fetch")
     fetch_and_store(connection_string,equity_tickers, 'staging.EquityData',start_date,end_date)
+    logging.info("Starting FX fetch")
     fetch_and_store(connection_string,fx_tickers, 'staging.FxData',start_date,end_date)
+    logging.info("Starting KPI computation")
     computeKPI(connection_string)
 
 #funzione di scrittura su database
@@ -58,10 +63,12 @@ def computeKPI(connection_string):
     conn = pyodbc.connect(connection_string)
     cursor = conn.cursor()
 
+    stored_procedure = "etl.usp_main" 
+
     try:
         with pyodbc.connect(connection_string) as conn:
             with conn.cursor() as cursor:
-                        cursor.execute("EXEC etl.usp_main;")
+                        cursor.execute("{CALL " + stored_procedure + "}")
 
     except Exception as e:
         logging.error(f"Error computing KPI: {e}")
